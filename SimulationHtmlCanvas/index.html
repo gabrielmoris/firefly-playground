@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+</head>
+
+<body>
+    <canvas id="canvas" width="500" height="500" style="border:1px solid #000000;"></canvas>
+
+    <script>
+        const n = 10;
+        const r = 60;
+
+        let ff = new Array(n).fill(0);
+        for (let i = 0; i < n; i += 1) {
+            ff[i] = {
+                x: Math.random() * 500, y: Math.random() * 500,
+                f: 0.2, phi: Math.random()*5, phiNext: 0
+            };
+        }
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        function isOn(ff, t) {
+            const x = Math.sin(Math.PI * 2 * ff.f * t + ff.phi);
+            return x > 0.7;
+        }
+
+        function isClose(ff1, ff2) {
+            const dx = ff1.x - ff2.x;
+            const dy = ff1.y - ff2.y;
+            const d = Math.sqrt(dx * dx + dy * dy);
+            return d < (2 * r);
+        }
+
+        function update(t) {
+            let pp = 0;
+            let nn = 0;
+            let cc = 0;
+
+            for (let i = 0; i < n; i += 1) {
+                ff[i].phiNext = ff[i].phi;
+                for (let j = 0; j < n; j += 1) {
+                    if (isClose(ff[i], ff[j])) {
+
+                        if (i != j) {
+                            cc += 1;
+                            if (ff[j].phi > ff[i].phi) {
+                                ff[i].phiNext += 0.001;
+                                pp += 1;
+                            }
+                            if (ff[j].phi < ff[i].phi) {
+                                ff[i].phiNext -= 0.001;
+                                nn += 1;
+                            }
+                        }
+                    }
+                }
+            }
+            for (let i = 0; i < n; i += 1) {
+                ff[i].phi = ff[i].phiNext;
+            }
+
+            console.log(cc, pp, nn);
+            //console.log(ff[0].phi, ff[1].phi, ff[2].phi, ff[3].phi, ff[4].phi, ff[5].phi, ff[6].phi);
+        }
+
+        function draw(t) {
+            ctx.fillStyle = 'white';
+            ctx.font = '8px Tahoma';
+            ctx.fillRect(0, 0, 500, 500);
+            for (let i = 0; i < n; i += 1) {
+
+                ctx.fillStyle = isOn(ff[i], t) > 0.0 ? '#f00' : '#f99';
+                ctx.beginPath();
+                ctx.arc(ff[i].x, ff[i].y, 8, 0, 2 * Math.PI);
+                ctx.fill();
+
+                ctx.strokeText(ff[i].phi.toFixed(2), ff[i].x, ff[i].y);
+
+                ctx.beginPath();
+                ctx.arc(ff[i].x, ff[i].y, r, 0, 2 * Math.PI);
+                ctx.stroke();
+            }
+        }
+
+        let time = 0.0;
+
+        function tick() {
+            time += 0.05;
+            update(time);
+            draw(time);
+        }
+
+        setInterval(tick, 50);
+    </script>
+</body>
+
+</html>
