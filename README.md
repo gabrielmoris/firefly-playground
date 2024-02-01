@@ -8,14 +8,14 @@ https://mikroshop.ch/Home.html?gruppe=10&artikel=1490
 https://randomnerdtutorials.com/installing-the-esp32-board-in-arduino-ide-windows-instructions/
 
 ## Folder structure
-FIREFLY-PLAYGROUND
-├───BLE_notify
-├───h_ble_tempplotter_server
-└───SimulationHtmlCanvas
-
+FIREFLY-PLAYGROUND  
+├───BLE_notify  
+├───h_ble_tempplotter_server  
+└───SimulationHtmlCanvas  
+  
 ### h_ble_tempplotter_server
-Based on the https://RandomNerdTutorials.com/esp32-ble-server-client/ which has a BME280 which this board not have does advertise Temp and Humidity. Exchanged this with the esp32-internal-temperature.
-
+Based on the https://RandomNerdTutorials.com/esp32-ble-server-client/ which has a BME280 which this board not have does advertise Temp and Humidity. Exchanged this with the esp32-internal-temperature.  
+  
 ## Run the code first time on Arduino IDE (h_ble_tempplotter_server)
 1. install Arduino IDE >=2.x (https://www.arduino.cc/en/software)
 2. Open Arduino IDE
