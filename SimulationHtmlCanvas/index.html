@@ -1,54 +1,79 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+    <meta charset="utf-8" />
+    <title>FireFly Simulation</title>
+    <link rel="icon" href="data:;base64,=">
+    <style>
+        body {
+            background-color: #000;
+        }
+
+        canvas {
+            border: 1px solid #fff;
+        }
+    </style>
 </head>
 
 <body>
-    <canvas id="canvas" width="1000" height="500" style="border:1px solid #000000; margin-left: 100px"></canvas>
+    <canvas id="canvas" width="1000" height="500"></canvas>
 
     <script>
-        const visibilityRadius = 100;
+        const numberOfFireFlies = 20;
+        const tickSpeed = 0.1; // seconds
 
         const canvas = document.getElementById('canvas');
+        canvas.addEventListener('pointerdown', pointerDown);
+        canvas.addEventListener('pointermove', pointerMove);
+        canvas.addEventListener('pointerup', pointerUp);
         const ctx = canvas.getContext('2d');
-        canvas.addEventListener('click', click);
+        ctx.font = '10px Tahoma';
         let time = 0.0;
         const TAU = Math.PI * 2;
         let selected = null;
 
-        const fireflies = new Array(20);
+        function pointerDown(event) {
+            const mouse = { x: event.offsetX, y: event.offsetY };
+            selected = null;
+            for (let i = 0; i < fireflies.length; i += 1) {
+                if (distance(fireflies[i], mouse) < 10) {
+                    selected = i;
+                    return;
+                }
+            }
+        }
+
+        function pointerMove(event) {
+            const mouse = { x: event.offsetX, y: event.offsetY };
+            if (selected !== null) {
+                fireflies[selected].x = mouse.x;
+                fireflies[selected].y = mouse.y;
+            }
+        }
+
+        function pointerUp(event) {
+            selected = null;
+        }
+
+        const fireflies = new Array(numberOfFireFlies);
         for (let i = 0; i < fireflies.length; i += 1) {
             fireflies[i] = {
                 x: Math.random() * canvas.width,
                 y: Math.random() * canvas.height,
-                f: 1 / 5, // frequency [Hz]
-                phi: Math.random() * TAU,
-                phiNext: 0,
-                drift: Math.random() * 0.0001,
+                
+                // TODO all of the following variables are constants but could be multiplied by Math.random
+                // TODO in a more realistic scenario all fireflies would have a different time base and also need to synchronize the time base
+
+                glowDuration: 2.0, // how long the glow is activated [seconds]
+                glowPeriod: 5.0, // time between two glows [seconds]
+                time: 0, // internal time of the firefly [seconds]
+                timeOffset: Math.random() * 4,
+                timeOffsetNext: 0.0,
+                visibilityRadius: 100, // how far the fireflies sees [pixels]
+                driftIfAlone: 0.1,
+                isOn: false,
             };
-        }
-
-        // 1. click = select | 2. click = move
-        function click(event) {
-            const mouse = { x: event.offsetX, y: event.offsetY };
-            if (selected === null) {
-                for (let i = 0; i < fireflies.length; i += 1) {
-                    if (distance(fireflies[i], mouse) < 10) {
-                        selected = i;
-                        return;
-                    }
-                }
-            } else {
-                fireflies[selected].x = mouse.x;
-                fireflies[selected].y = mouse.y;
-                selected = null;
-            }
-        }
-
-        function isOn(ff, t) {
-            const x = Math.sin(TAU * ff.f * t + ff.phi);
-            return x > 0.7;
         }
 
         function distance(ff1, ff2) {
@@ -58,61 +83,72 @@
             return d;
         }
 
-        function isClose(ff1, ff2) {
-            return distance(ff1, ff2) < visibilityRadius;
-        }
+        function update() {
+            function isClose(ff1, ff2) {
+                return distance(ff1, ff2) < ff1.visibilityRadius;
+            }
 
-        function update(t) {
             for (let i = 0; i < fireflies.length; i += 1) {
-                fireflies[i].phiNext = fireflies[i].phi;
+                fireflies[i].timeOffsetNext = fireflies[i].timeOffset;
+                let neighboursCount = 0;
                 for (let j = 0; j < fireflies.length; j += 1) {
                     if (i != j) {
                         if (isClose(fireflies[i], fireflies[j])) {
-                            if (fireflies[j].phi > fireflies[i].phi) {
-                                fireflies[i].phiNext += 0.005;
+                            neighboursCount += 1;
+                            if (fireflies[i].timeOffset < fireflies[j].timeOffset) {
+                                fireflies[i].timeOffsetNext += 0.05 * tickSpeed;
                             }
-                            if (fireflies[j].phi < fireflies[i].phi) {
-                                fireflies[i].phiNext -= 0.005;
+                            if (fireflies[i].timeOffset > fireflies[j].timeOffset) {
+                                fireflies[i].timeOffsetNext -= 0.05 * tickSpeed;
                             }
                         }
                     }
                 }
+                if (neighboursCount === 0) {
+                    fireflies[i].timeOffsetNext += fireflies[i].driftIfAlone * tickSpeed;
+                }
             }
 
             for (let i = 0; i < fireflies.length; i += 1) {
-                fireflies[i].phi = fireflies[i].phiNext + fireflies[i].drift;
+                fireflies[i].timeOffset = fireflies[i].timeOffsetNext;
+                const time = fireflies[i].time + fireflies[i].timeOffset;
+                fireflies[i].isOn = (time % fireflies[i].glowPeriod) <= fireflies[i].glowDuration;
+                fireflies[i].time += tickSpeed;
             }
         }
 
-        function draw(t) {
-            ctx.fillStyle = 'white';
-            ctx.font = '8px Tahoma';
+        function draw() {
+            ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             for (let i = 0; i < fireflies.length; i += 1) {
                 const ff = fireflies[i];
 
-                ctx.fillStyle = isOn(ff, t) > 0.0 ? '#f00' : '#f99';
+                // glowing, or not
+                ctx.fillStyle = ff.isOn ? '#ff0' : '#ffc';
                 ctx.beginPath();
-                ctx.arc(ff.x, ff.y, 8, 0, 2 * Math.PI);
+                ctx.arc(ff.x, ff.y, 10, 0, 2 * Math.PI);
                 ctx.fill();
 
-                ctx.strokeStyle = '#000';
-                ctx.strokeText(ff.phi.toFixed(2), ff.x, ff.y);
+                // internal timer
+                ctx.strokeStyle = '#fff';
+                ctx.strokeText(ff.timeOffset.toFixed(2), ff.x + 10, ff.y);
 
-                ctx.strokeStyle = '#999';
+                // visibility circle
+                ctx.strokeStyle = '#333';
                 ctx.beginPath();
-                ctx.arc(ff.x, ff.y, visibilityRadius, 0, 2 * Math.PI);
+                ctx.arc(ff.x, ff.y, ff.visibilityRadius, 0, 2 * Math.PI);
                 ctx.stroke();
             }
         }
 
         function tick() {
-            time += 0.1;
-            update(time);
-            draw(time);
+            update();
+            draw();
         }
 
-        setInterval(tick, 100);
+        const tickSpeedMilliseconds = Math.floor(tickSpeed * 1000);
+        window.setInterval(tick, tickSpeedMilliseconds);
+
     </script>
 </body>
 
