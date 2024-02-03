@@ -1,22 +1,40 @@
-# Documentation 
-## Links
 
-https://docs.espressif.com/projects/arduino-esp32/en/latest/boards/boards.html#espressif
+# Idea
 
-https://mikroshop.ch/Home.html?gruppe=10&artikel=1490
+Create tiny artificial fireflies, which should look inspring and ideally behave at least somewhat like reality.
 
-https://randomnerdtutorials.com/installing-the-esp32-board-in-arduino-ide-windows-instructions/
+# Links
 
-## Folder structure
-FIREFLY-PLAYGROUND  
-├───BLE_notify  
-├───h_ble_tempplotter_server  
-└───SimulationHtmlCanvas  
-  
-### h_ble_tempplotter_server
-Based on the https://RandomNerdTutorials.com/esp32-ble-server-client/ which has a BME280 which this board not have does advertise Temp and Humidity. Exchanged this with the esp32-internal-temperature.  
-  
-## Run the code first time on Arduino IDE (h_ble_tempplotter_server)
+- https://docs.espressif.com/projects/arduino-esp32/en/latest/boards/boards.html#espressif
+- https://mikroshop.ch/Home.html?gruppe=10&artikel=1490
+- https://randomnerdtutorials.com/installing-the-esp32-board-in-arduino-ide-windows-instructions/
+
+# Microcontroller
+
+For the first few test a development kit named **ESP32 DevKit V1** was used by everyone participating this project. It can be used with the Arduino IDE (< 2.0 and > 2.0).
+
+- https://de.aliexpress.com/item/1005005564949759.html
+
+To check if compilation and uploading works as expected the Blink example should be used first. There is no need to modify the Blink example (this was tested several times with several people). If the compilation already fails with the Blink example, the installation is not correct.
+
+## Arduino IDE > 2.0
+
+- Install Arduino IDE > 2.0
+- Open Arduino IDE
+- Tools / Board / Boards Manager ...
+  - esp32 by Espressif Systems
+  - Install (downloads several 100 MBytes)
+- Tools / Board / ESP32 Arduino / DOIT ESP32 DEVKIT V1
+- Tools / Port / **PORT**
+- File / Examples / 01.Basics / Blink
+- Sketch / Upload
+
+# Directories
+
+## h_ble_tempplotter_server
+
+Based on the https://RandomNerdTutorials.com/esp32-ble-server-client/ which has a BME280 which this board not have does advertise Temp and Humidity. Exchanged this with the esp32-internal-temperature.
+
 1. install Arduino IDE >=2.x (https://www.arduino.cc/en/software)
 2. Open Arduino IDE
 3. File \ Preferences \ Additional boards manager URL: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
@@ -26,3 +44,19 @@ Based on the https://RandomNerdTutorials.com/esp32-ble-server-client/ which has 
 7. File \ Open: .ino file
 8. Install <nRF Connect> on the mobile phone
 9. start the nRF Connect and scan for the SERVICE_UUID ending with *f59 named <TempPlotterServer>
+
+## BLE_notify
+
+?
+
+## BLEAdvertising
+
+Continuously send out advertising packets. Advertising packets are broadcasted on a fixed frequency and are therefore visible by everyone.
+
+## BLEScan
+
+Continuously listens for advertising packets. Works together with BLEAdvertising. On the Arduino Serial Monitor, every BLE devices which advertises something, is printed out.
+
+## SimulationHtmlCanvas
+
+Is a simulation environment for fireflies. Only a browser is necessary.
