@@ -7,6 +7,7 @@
     <link rel="icon" href="data:;base64,=">
     <style>
         body {
+            color: #fff;
             background-color: #000;
         }
 
@@ -17,6 +18,7 @@
 </head>
 
 <body>
+    <p>Click and drag fireflies, to move them around. If a firefly can see another firefly, it adjusts its sense of time to the the other visible fireflies. If a firefly is a alone, its own interal sense of time starts to drift. Move them together or apart to see, how it influences their behaviour.</p>
     <canvas id="canvas" width="1000" height="500"></canvas>
 
     <script>
@@ -61,7 +63,7 @@
             fireflies[i] = {
                 x: Math.random() * canvas.width,
                 y: Math.random() * canvas.height,
-                
+
                 // TODO all of the following variables are constants but could be multiplied by Math.random
                 // TODO in a more realistic scenario all fireflies would have a different time base and also need to synchronize the time base
 
@@ -134,7 +136,7 @@
                 ctx.strokeText(ff.timeOffset.toFixed(2), ff.x + 10, ff.y);
 
                 // visibility circle
-                ctx.strokeStyle = '#333';
+                ctx.strokeStyle = '#222';
                 ctx.beginPath();
                 ctx.arc(ff.x, ff.y, ff.visibilityRadius, 0, 2 * Math.PI);
                 ctx.stroke();
