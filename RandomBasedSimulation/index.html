@@ -56,7 +56,7 @@
           // it would be allowed to switch on the light
           let switchOn = false;
           if (Math.random() < fireFly.defaultProbability) { switchOn = true; }
-          // seing other lights increases the probability to switch on the light
+          // seeing other lights increases the probability to switch on the light
           for (let j = 0; j < nFireFlies; j += 1) {
             if (fireFlies[j].on) {
               const d2 = dist2(i, j);
