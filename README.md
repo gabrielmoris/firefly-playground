@@ -70,6 +70,6 @@ Continuously listens for advertising packets. Works together with BLEAdvertising
 
 Is a simulation environment for fireflies. Only a webbrowser is necessary.
 
-## RandomBasedSimulation
+## RandomBasedSimulation (Webbrowser)
 
-Is an simulation (inspired by the previous one) where the the interaction is modelled as an increased probability to switch on the light
+Is a simulation (inspired by the previous one) where the the interaction is modelled as an increased probability to switch on the light
