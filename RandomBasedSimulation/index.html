@@ -1,0 +1,113 @@
+<html>
+<head></head>
+<body style="background-color:#000">
+<canvas id="canvas" width="800" height="800" style="border:1px solid gray; margin: auto; display: block"></canvas>
+<script>
+  const nFireFlies = 25;
+  const ctx = document.getElementById('canvas').getContext('2d');
+  const w = 800;
+  const h = 800;
+  let time = 0;
+  const dt = 0.1;
+  const fireFlies = [];
+  const maxVariation = 0.2;
+
+  function varFactor() {
+    return (Math.random() * 2 - 1) * maxVariation + 1;
+  }
+  function initFireFlies() {
+    for (let i = 0; i < nFireFlies; i += 1) {
+      fireFlies[i] = {
+        x: Math.random() * w,
+        y: Math.random() * h,
+        on: false,
+        restingTime: 2 * varFactor(),
+        onTime: Infinity,
+        offTime: 0,
+        reactTime: 0.1 * varFactor(),
+        lightDuration: 1 * varFactor(),
+        nearDistance: 50 * varFactor(),
+        defaultProbability: 0.005 * varFactor(),
+        interactProbability: 0.1 * varFactor()
+      };
+    }
+  }
+  function dist2(i, j) {
+    const dx = fireFlies[i].x - fireFlies[j].x;
+    const dy = fireFlies[i].y - fireFlies[j].y;
+    return dx * dx + dy * dy;
+  }
+  function updateFireFly(i) {
+    const fireFly = fireFlies[i];
+    if (fireFly.on) {
+      if (fireFly.offTime <= time) {
+        fireFly.on = false;
+        fireFly.onTime = Infinity;
+      }
+    } else {
+      if (fireFly.onTime < Infinity) {
+        // it already decided to switch on the light
+        if (fireFly.onTime <= time) {
+          fireFly.on = true;
+          fireFly.offTime = time + fireFly.lightDuration;
+        }
+      } else {
+        if (time - fireFly.offTime >= fireFly.restingTime) {
+          // it would be allowed to switch on the light
+          let switchOn = false;
+          if (Math.random() < fireFly.defaultProbability) { switchOn = true; }
+          // seing other lights increases the probability to switch on the light
+          for (let j = 0; j < nFireFlies; j += 1) {
+            if (fireFlies[j].on) {
+              const d2 = dist2(i, j);
+              // the probability for an interaction decreases with the distance
+              distFactor = Math.min(1, fireFly.nearDistance * fireFly.nearDistance / d2);
+              const prob = distFactor * fireFly.interactProbability;
+              if (Math.random() < prob) { switchOn = true; }
+            }
+          }
+          if (switchOn) {
+            // the light will be switched on after some delay
+            fireFly.onTime = time + fireFly.reactTime;
+          }
+        }
+      }
+    }
+  }
+  function drawFireFly(fireFly) {
+    ctx.fillStyle = fireFly.on ? '#ff0' : '#111';
+    ctx.beginPath();
+    ctx.arc(fireFly.x, fireFly.y, 5, 0, 2 * Math.PI);
+    ctx.fill();
+  }
+  function drawFireFlies() {
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, w, h);
+
+    for (let i = 0; i < nFireFlies; i += 1) {
+      const fireFly = fireFlies[i];
+      if (!fireFly.on) {
+        drawFireFly(fireFly);
+      }
+    }
+    for (let i = 0; i < nFireFlies; i += 1) {
+      const fireFly = fireFlies[i];
+      if (fireFly.on) {
+        drawFireFly(fireFly);
+      }
+    }
+  }
+
+  function update() {
+    for (let i = 0; i < nFireFlies; i += 1) {
+      updateFireFly(i);
+    }
+    drawFireFlies();
+    time += dt;
+  }
+
+  initFireFlies();
+  setInterval(update, dt * 1000);
+</script>
+</body>
+

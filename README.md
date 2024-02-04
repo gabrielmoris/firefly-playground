@@ -69,3 +69,7 @@ Continuously listens for advertising packets. Works together with BLEAdvertising
 ## SimulationHtmlCanvas (Webbrowser)
 
 Is a simulation environment for fireflies. Only a webbrowser is necessary.
+
+## RandomBasedSimulation
+
+Is an simulation (inspired by the previous one) where the the interaction is modelled as an increased probability to switch on the light
