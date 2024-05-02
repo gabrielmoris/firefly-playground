@@ -11,6 +11,7 @@
   const dt = 0.1;
   const fireFlies = [];
   const maxVariation = 0.2;
+  let selected = -1;
 
   function varFactor() {
     return (Math.random() * 2 - 1) * maxVariation + 1;
@@ -20,6 +21,7 @@
       fireFlies[i] = {
         x: Math.random() * w,
         y: Math.random() * h,
+        r: 5,
         on: false,
         restingTime: 2 * varFactor(),
         onTime: Infinity,
@@ -77,8 +79,15 @@
   function drawFireFly(fireFly) {
     ctx.fillStyle = fireFly.on ? '#ff0' : '#111';
     ctx.beginPath();
-    ctx.arc(fireFly.x, fireFly.y, 5, 0, 2 * Math.PI);
+    ctx.arc(fireFly.x, fireFly.y, fireFly.r, 0, 2 * Math.PI);
     ctx.fill();
+    if (selected >= 0 && fireFly == fireFlies[selected]) {
+      // the firefly is selected
+      ctx.strokeStyle = '#f00';
+      ctx.beginPath();
+      ctx.arc(fireFly.x, fireFly.y, 2 * fireFly.r, 0, 2 * Math.PI);
+      ctx.stroke();
+    }
   }
   function drawFireFlies() {
     ctx.fillStyle = 'black';
@@ -108,6 +117,32 @@
 
   initFireFlies();
   setInterval(update, dt * 1000);
+
+  function onClick(event) {
+    const x = event.offsetX;
+    const y = event.offsetY;
+    if (selected == -1) {
+      for (let i = 0; i < nFireFlies; i += 1) {
+        const fireFly = fireFlies[i];
+        const dx = fireFly.x - x;
+        const dy = fireFly.y - y;
+        if (fireFly.r * fireFly.r >= dx * dx + dy * dy) {
+          // select a firefly
+          selected = i;
+          break;
+        }
+      }
+    } else {
+      // move a firefly
+      fireFlies[selected].x = x;
+      fireFlies[selected].y = y;
+      selected = -1;
+    }
+    drawFireFlies();
+  }
+
+  const canvas = document.getElementById('canvas')
+  canvas.addEventListener('click', onClick);
 </script>
 </body>
 
