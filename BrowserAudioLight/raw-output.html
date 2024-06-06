@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8" />
+	<title>FireFly</title>
+	<link rel="icon" href="data:;base64,=">
+	<style>
+		body {
+			background-color: #000;
+		}
+
+		main {
+			margin: auto;
+			width: 30rem;
+			display: flex;
+			justify-content: space-evenly;
+		}
+
+		button {
+			width: 10rem;
+			height: 10rem;
+			xborder-radius: 10rem;
+			xborder: 0.2rem solid #999;
+		}
+	</style>
+</head>
+
+<body>
+	<main>
+		<button id="button">Play</button>
+
+	</main>
+
+	<script>
+		async function start() {
+			//stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+			const audioCtx = new AudioContext();
+
+			const channels = 1;
+			const seconds = 3;
+			const frameCount = audioCtx.sampleRate * seconds;
+
+			function play() {
+				const myArrayBuffer = audioCtx.createBuffer(channels, frameCount, audioCtx.sampleRate);
+
+				const f = 800.0;
+				let m = 0.0;
+				let a = [];
+				for (let channel = 0; channel < channels; channel += 1) {
+					const nowBuffering = myArrayBuffer.getChannelData(channel);
+
+					let bitPrev = 0;
+
+					for (let i = 0; i < frameCount; i++) {
+						bit = Math.floor(i / audioCtx.sampleRate) % 2;
+						bit = (bit * 2) - 1;
+
+						m = m + ((bit + bitPrev) / 2);
+
+						const fDelta = 200.0;
+						const fCenter = 800.0;
+						//nowBuffering[i] = Math.cos(2 * Math.PI * f * i / audioCtx.sampleRate);
+						const s = Math.cos(2 * Math.PI * fCenter * i / audioCtx.sampleRate - (2 * Math.PI * m * fDelta / audioCtx.sampleRate));
+						nowBuffering[i] = s;
+
+
+						a.push(s);
+
+						bitPrev = bit;
+
+					}
+				}
+
+				//const csv = "data:text/csv;charset=utf-8," + a.join('\n');
+				//var encodedUri = encodeURI(csv);
+				//window.open(encodedUri);
+
+				const source = audioCtx.createBufferSource();
+				source.buffer = myArrayBuffer;
+				source.connect(audioCtx.destination);
+				source.start();
+
+				console.log('Started');
+			}
+
+			document.getElementById('button').addEventListener('click', play);
+
+		}
+
+		start();
+
+		//document.getElementById('start').addEventListener('click', start);
+
+		//setTimeout(, 2000);
+
+	</script>
+</body>
+
+</html>
