@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>FireFly</title>
+    <link rel="icon" href="data:;base64,=">
+    <style>
+        body {
+            background-color: #000;
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        async function setup() {
+
+            stream = await navigator.mediaDevices.getUserMedia({
+                audio: true,
+            });
+            const context = new AudioContext();
+            const analyser = context.createAnalyser();
+            const source = context.createMediaStreamSource(stream);
+
+            analyser.fftSize = 2048;
+            source.connect(analyser);
+
+            function analyze() {
+                data = new Float32Array(analyser.frequencyBinCount);
+                analyser.getFloatFrequencyData(data);
+
+                const maxFrequency = context.sampleRate / 2;
+
+                /*
+                for (let i = 0; i < data.length; i += 1) {
+                    console.log(i, maxFrequency * i / data.length, data[i]);
+                }
+                */
+
+                const f = 15000;
+                const bin = Math.floor(data.length * f / maxFrequency);
+                const strength = 255 + (4 * (30 + data[bin]));
+                console.log(bin, f, data[bin], strength);
+
+                document.body.style.backgroundColor = `rgb(${strength}, ${strength}, 0)`;
+
+            }
+
+            setInterval(analyze, 200);
+        }
+
+        setTimeout(setup, 2000);
+
+    </script>
+</body>
+
+</html>

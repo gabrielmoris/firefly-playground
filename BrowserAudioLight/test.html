@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8" />
+	<title>FireFly</title>
+	<link rel="icon" href="data:;base64,=">
+	<style>
+		body {
+			background-color: #000;
+		}
+
+		main {
+			margin: auto;
+			width: 30rem;
+			display: flex;
+			justify-content: space-evenly;
+		}
+
+		div {
+			width: 10rem;
+			height: 10rem;
+			border-radius: 10rem;
+			border: 0.2rem solid #999;
+		}
+	</style>
+</head>
+
+<body>
+	<main>
+		<button id="start">Start</button>
+		<div id="tx"></div>
+		<div id="rx"></div>
+	</main>
+
+	<script>
+		async function start() {
+			stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+			const context = new AudioContext();
+
+			const analyser = context.createAnalyser();
+			analyser.connect(context.destination);
+			analyser.fftSize = 1024;
+
+			const source = context.createMediaStreamSource(stream);
+			//analyser.smoothingTimeConstant = 1.0;
+			source.connect(analyser);
+
+			const gain = context.createGain();
+			gain.connect(context.destination);
+			gain.gain.value = 1.0;
+
+			const oscillator = context.createOscillator();
+			oscillator.type = 'sine';
+			oscillator.frequency.value = 800;
+			oscillator.connect(gain);
+			oscillator.start();
+
+			let i = 0;
+
+			function analyze() {
+				data = new Float32Array(analyser.frequencyBinCount);
+				analyser.getFloatFrequencyData(data);
+
+				const maxFrequency = context.sampleRate / 2;
+
+				const isTxEnabled = true;// (Math.floor(i / 10) % 5) < 2;
+
+				//gain.gain.value = isTxEnabled ? 1.0 : 0.01;
+
+				for (let i = 0; i < data.length; i += 1) {
+					if (data[i] > -50) {
+						//console.log(i, maxFrequency * i / data.length, data[i]);
+					}
+				}
+
+				const f = 800;
+				const bin = Math.floor(data.length * f / maxFrequency);
+				const strength = 255 + (4 * (30 + data[bin]));
+				console.log(bin, f, data[bin], strength);
+
+				document.getElementById('tx').style.backgroundColor = isTxEnabled ? `rgb(255, 255, 0)` : `rgb(0, 0, 0)`;
+				document.getElementById('rx').style.backgroundColor = `rgb(${strength}, ${strength}, 0)`;
+
+				i += 1;
+			}
+
+			setInterval(analyze, 50);
+		}
+
+		document.getElementById('start').addEventListener('click', start);
+
+		//setTimeout(setup, 2000);
+
+	</script>
+</body>
+
+</html>
