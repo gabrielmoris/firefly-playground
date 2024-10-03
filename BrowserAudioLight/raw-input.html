@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8" />
+	<title>Input</title>
+	<link rel="icon" href="data:;base64,=">
+	<style>
+		body {
+		}
+
+		main {
+			margin: auto;
+			width: 30rem;
+			display: flex;
+			justify-content: space-evenly;
+		}
+
+		button {
+			width: 10rem;
+			height: 10rem;
+			xborder-radius: 10rem;
+			xborder: 0.2rem solid #999;
+		}
+	</style>
+</head>
+
+<body>
+	<main>
+		<button id="button">Input</button>
+
+	</main>
+
+	<script>
+		
+		class GoertzelDetector {
+  constructor(targetFrequency, sampleRate) {
+    this.targetFrequency = targetFrequency;
+    this.sampleRate = sampleRate;
+    this.coeff = 2 * Math.cos(2 * Math.PI * this.targetFrequency / this.sampleRate);
+    this.reset();
+  }
+
+  reset() {
+    this.q1 = 0;
+    this.q2 = 0;
+  }
+
+  process(sample) {
+    const q0 = this.coeff * this.q1 - this.q2 + sample;
+    this.q2 = this.q1;
+    this.q1 = q0;
+  }
+
+  getMagnitude() {
+    return Math.sqrt(this.q1 * this.q1 + this.q2 * this.q2 - this.coeff * this.q1 * this.q2);
+  }
+}
+
+
+		
+		async function start() {
+			//stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            
+            
+			async function play() {
+				const context = new AudioContext();
+				const audioCtx = context;
+				const audioContext = context;
+				const stream = await navigator.mediaDevices.getUserMedia({
+					audio: true,
+				});
+				const source = context.createMediaStreamSource(stream);
+				console.log("Input");
+
+            const detector2000 = new GoertzelDetector(2000, audioContext.sampleRate);
+			const detector5000 = new GoertzelDetector(4000, audioContext.sampleRate);
+
+  detector2000.reset();
+  detector5000.reset();
+
+				
+				const seconds = 10;
+				const recordingDuration = seconds;
+				const bufferSize = context.sampleRate * seconds;
+				const sampleRate = context.sampleRate;
+				const numberOfChannels = 1; // Mono recording
+				
+				const recordingBuffer = audioCtx.createBuffer(numberOfChannels, bufferSize, context.sampleRate);
+				
+				
+				  const recorder = audioContext.createScriptProcessor(1024, numberOfChannels, numberOfChannels);
+				  let recordingStartTime;
+				  let a = [];
+				  let nn = 0;
+
+				  recorder.onaudioprocess = (e) => {
+					if (!recordingStartTime) {
+					  recordingStartTime = audioContext.currentTime;
+						console.log("Recording started");
+					}
+
+					
+					const inputBuffer = e.inputBuffer;
+					  const inputData = inputBuffer.getChannelData(0);
+					  
+					    for (let i = 0; i < inputData.length; i++) {
+    detector2000.process(inputData[i]);
+    detector5000.process(inputData[i]);
+  }
+  
+   const magnitude2000 = detector2000.getMagnitude();
+  const magnitude5000 = detector5000.getMagnitude();
+  
+    detector2000.reset();
+  detector5000.reset();
+  
+  const threshold = 5;
+  
+// console.log(magnitude2000, magnitude5000);
+  
+    if (magnitude2000 > threshold && magnitude5000 <= threshold) {
+    console.log("0"); // Output 0 for 2000 Hz
+  } else if (magnitude2000 <= threshold && magnitude5000 > threshold) {
+    console.log("1"); // Output 1 for 5000 Hz
+  }
+
+					/*
+					for (let channel = 0; channel < numberOfChannels; channel++) {
+					  const inputData = inputBuffer.getChannelData(channel);
+					  const outputData = recordingBuffer.getChannelData(channel);
+					  const elapsedTime = audioContext.currentTime - recordingStartTime;
+					  const elapsedSamples = Math.floor(elapsedTime * sampleRate);
+
+					  for (let i = 0; i < inputBuffer.length; i++) {
+						if (elapsedSamples + i < bufferSize) {
+						  outputData[elapsedSamples + i] = inputData[i];
+						  nn += 1;
+						  if(nn % 32 == 0) {
+							a.push(inputData[i]);
+							}
+						}
+					  }
+					}
+					*/
+
+					if (audioContext.currentTime - recordingStartTime >= recordingDuration) {
+						console.log("Recording finished");
+					      source.disconnect(recorder);
+						recorder.disconnect(audioContext.destination);
+						
+						console.log("Save");
+				//const csv = "data:text/csv;charset=utf-8," + a.join('\n');
+				//var encodedUri = encodeURI(csv);
+				//window.open(encodedUri);
+
+						
+					}
+				  };
+
+				  source.connect(recorder);
+				  recorder.connect(audioContext.destination);
+				
+
+			}
+
+			document.getElementById('button').addEventListener('click', play);
+
+		}
+
+		start();
+
+		//document.getElementById('start').addEventListener('click', start);
+
+		//setTimeout(, 2000);
+
+	</script>
+</body>
+
+</html>
